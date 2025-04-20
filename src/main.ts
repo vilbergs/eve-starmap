@@ -68,21 +68,7 @@ controls.update()
 const axesHelper = new THREE.AxesHelper(5)
 scene.add(axesHelper)
 
-const info = document.getElementById('info')!
-
 function animate() {
-  info.innerHTML = ''
-  info.appendChild(
-    createInfoNode('Camera', camera.position.toArray().join(', '), 'white')
-  )
-  info.appendChild(
-    createInfoNode(
-      'Camera Rotation',
-      camera.rotation.toArray().join(', '),
-      'white'
-    )
-  )
-
   for (let i = 0; i < region_objects.length; i++) {
     region_elements[i].style.pointerEvents = 'none'
     region_objects[i].rotation.set(...camera.rotation.toArray())
