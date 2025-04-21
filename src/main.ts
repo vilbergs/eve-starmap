@@ -7,6 +7,16 @@ import {
 } from 'three/addons/renderers/CSS3DRenderer.js'
 import systems from './systems.json'
 import regions from './regions.json'
+import { create_system_graph } from './system-graph'
+import { z } from '@zod/mini'
+import { Point, SolarSystemSchema } from './schemas'
+import { Vector } from 'three/examples/jsm/Addons.js'
+
+const SystemArraySchema = z.array(SolarSystemSchema)
+
+const all_systems = SystemArraySchema.parse(systems)
+
+const system_graph = create_system_graph(all_systems)
 
 const region_elements: HTMLDivElement[] = []
 const region_objects: CSS3DObject[] = []
@@ -39,20 +49,50 @@ cssRenderer.domElement.style.pointerEvents = 'none'
 document.body.appendChild(renderer.domElement)
 document.body.appendChild(cssRenderer.domElement)
 
-for (const { center, security } of systems) {
+for (const { center, security, stargates } of systems) {
   const geometry = new THREE.SphereGeometry(1)
 
-  const material = new THREE.MeshBasicMaterial({
-    color: getSecurityColor(security),
-    opacity: 0.5,
+  const color = getSecurityColor(security)
+
+  const system_material = new THREE.MeshBasicMaterial({
+    color,
+    opacity: 0.6,
     transparent: true,
   })
-  const cube = new THREE.Mesh(geometry, material)
 
-  center[0] = -center[0]
-  cube.position.set(
-    ...(center.map((coord) => coord / divisor) as [number, number, number])
-  )
+  const cube = new THREE.Mesh(geometry, system_material)
+
+  const system_position = [-center[0], center[1], center[2]].map(
+    (p) => p / divisor
+  ) as Point
+
+  cube.position.set(...system_position)
+
+  stargates.forEach((stargate) => {
+    const stargate_position = new THREE.Vector3(
+      ...(system_position.map((p) => p) as Point)
+    )
+
+    const destination_system = system_graph.get(stargate.destination)
+
+    if (!destination_system) {
+      return
+    }
+
+    const { center: destination_p } = destination_system
+
+    const p: Point = [
+      -destination_p[0],
+      destination_p[1],
+      destination_p[2],
+    ].map((p) => p / divisor) as Point
+
+    const destination_position = new THREE.Vector3(...p)
+
+    const line = create_line(stargate_position, destination_position, color)
+
+    scene.add(line)
+  })
 
   scene.add(cube)
 }
@@ -96,7 +136,7 @@ function createRegions() {
     element.style.color = 'white'
     element.style.fontSize = '4px'
     element.textContent = region.name
-    element.style.opacity = '0.9'
+    element.style.opacity = '0.8'
     element.className = 'textnode'
 
     const objectCSS = new CSS3DObject(element)
@@ -143,4 +183,24 @@ function getSecurityColor(security: number) {
   }
 
   return 0x8f2f6a
+}
+
+function create_line(
+  from: THREE.Vector3,
+  to: THREE.Vector3,
+  color: THREE.ColorRepresentation
+) {
+  const material = new THREE.LineBasicMaterial({
+    color,
+    opacity: 0.3,
+    transparent: true,
+  })
+
+  const points = [from, to]
+
+  const geometry = new THREE.BufferGeometry().setFromPoints(points)
+
+  const line = new THREE.Line(geometry, material)
+
+  return line
 }
