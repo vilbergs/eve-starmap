@@ -61,10 +61,13 @@ body {
   }
 
   #region-node {
-    font-size: 6px;
-    text-rendering: auto;
+    transform-style: preserve-3d;
+    font-size: 2vmin;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
     opacity: 0.9;
+    will-change: transform;
+    backface-visibility: hidden;
   }
 }
