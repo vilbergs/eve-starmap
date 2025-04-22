@@ -74,6 +74,10 @@ body {
 }
 
 @media screen and (max-width: 600px) {
+  #region-node {
+    font-size: 3vmin;
+  }
+
   #info button {
     font-size: 12px;
     padding: 4px 8px;
