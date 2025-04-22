@@ -64,16 +64,21 @@ body {
 #region-node {
   color: white;
   transform-style: preserve-3d;
-  font-size: 2vmin;
+  font-size: 8px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   will-change: transform;
+  font-weight: 500;
   backface-visibility: hidden;
-  opacity: 0.85;
+  opacity: 0.8;
 }
 
 @media screen and (max-width: 600px) {
+  #region-node {
+    font-size: 2vmin;
+  }
+
   #info button {
     font-size: 12px;
     padding: 4px 8px;

@@ -156,10 +156,15 @@ scene.add(line)
 
 createRegions()
 
-camera.position.z = 100
+camera.position.x = 29
+camera.position.y = 272
+camera.position.z = -153
+camera.rotation.x = -0.48
+camera.rotation.y = -0.125
+camera.rotation.z = -2.5
 
 const controls = new OrbitControls(camera, renderer.domElement)
-controls.target.set(0, 5, 0)
+controls.target.set(150, 100, 0)
 controls.update()
 
 function animate() {
