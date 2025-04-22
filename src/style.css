@@ -1,6 +1,20 @@
-:root {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+/* Shentox Font Declarations */
+@font-face {
+  font-family: 'Shentox';
+  src: url('/fonts/ShentoxTRIAL-Rg.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
 
+@font-face {
+  font-family: 'Shentox';
+  src: url('/fonts/ShentoxTRIAL-Md.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+}
+
+:root {
+  font-family: Shentox, Avenir, Helvetica, Arial, sans-serif;
   color-scheme: light dark;
 
   font-synthesis: none;
@@ -13,6 +27,7 @@ html,
 body {
   margin: 0;
   height: 100%;
+  background-color: black;
 }
 #canvas {
   width: 100%;
@@ -55,8 +70,7 @@ body {
   text-rendering: optimizeLegibility;
   will-change: transform;
   backface-visibility: hidden;
-  opacity: 0.8;
-  font-weight: 500;
+  opacity: 0.85;
 }
 
 @media screen and (max-width: 600px) {
