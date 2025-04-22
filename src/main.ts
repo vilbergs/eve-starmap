@@ -49,7 +49,7 @@ renderer.setSize(window.innerWidth, window.innerHeight)
 renderer.domElement.id = 'canvas'
 renderer.setPixelRatio(window.devicePixelRatio)
 
-const cssRenderer = new CSS3DRenderer()
+const cssRenderer = new CSS3DRenderer({})
 cssRenderer.setSize(window.innerWidth, window.innerHeight)
 cssRenderer.domElement.style.position = 'absolute'
 cssRenderer.domElement.style.top = '0'
@@ -131,14 +131,13 @@ const line_colors_uint = new Uint8Array(line_colors)
 const mergedGeometry = BufferGeometryUtils.mergeGeometries(geometries, false)
 const material = new THREE.MeshBasicMaterial({
   vertexColors: true,
-  opacity: 0.6,
+  opacity: 0.7,
   transparent: true,
 })
 const mesh = new THREE.Mesh(mergedGeometry, material)
 scene.add(mesh)
 
 const line_geometry = new THREE.BufferGeometry().setFromPoints(line_points)
-
 line_geometry.setAttribute(
   'color',
   new THREE.BufferAttribute(line_colors_uint, 3, true)
@@ -148,7 +147,7 @@ const line = new THREE.Line(
   line_geometry,
   new THREE.LineBasicMaterial({
     vertexColors: true,
-    opacity: 0.2,
+    opacity: 0.3,
     transparent: true,
   })
 )
