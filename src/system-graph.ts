@@ -1,4 +1,4 @@
-import { SolarySystem, Stargate } from './schemas'
+import { SolarySystem } from './schemas'
 
 export function create_system_graph(systems: SolarySystem[]) {
   const graph = new Map<number, SolarySystem>()
@@ -10,14 +10,8 @@ export function create_system_graph(systems: SolarySystem[]) {
   })
 
   return {
-    add(id: number, system: SolarySystem) {
-      graph.set(id, system)
-    },
     get(id: number) {
       return graph.get(id)
-    },
-    list() {
-      return Array.from(graph.values())
     },
   }
 }
