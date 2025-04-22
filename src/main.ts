@@ -11,15 +11,25 @@ import { create_system_graph } from './system-graph'
 import { z } from '@zod/mini'
 import { Point, SolarSystemSchema } from './schemas'
 import { Vector } from 'three/examples/jsm/Addons.js'
+import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js'
+
+const show_lines_button = document.getElementById('show-lines-button')
+
+window.state = {
+  shouldShowLines: false,
+  toggleLineVisibility() {
+    this.shouldShowLines = !this.shouldShowLines
+    show_lines_button!.innerHTML = `Show Lines: ${this.shouldShowLines}`
+  },
+}
 
 const SystemArraySchema = z.array(SolarSystemSchema)
-
 const all_systems = SystemArraySchema.parse(systems)
-
 const system_graph = create_system_graph(all_systems)
 
 const region_elements: HTMLDivElement[] = []
 const region_objects: CSS3DObject[] = []
+const geometries: any[] = []
 
 const divisor = 1_000_000_000_000_000
 
@@ -30,7 +40,7 @@ const camera = new THREE.PerspectiveCamera(
   75,
   window.innerWidth / window.innerHeight,
   0.1,
-  1000
+  1500
 )
 
 const renderer = new THREE.WebGLRenderer()
@@ -48,25 +58,38 @@ cssRenderer.domElement.style.pointerEvents = 'none'
 
 document.body.appendChild(renderer.domElement)
 document.body.appendChild(cssRenderer.domElement)
+const line_points: any[] = []
+const line_colors: number[] = []
 
 for (const { center, security, stargates } of systems) {
   const geometry = new THREE.SphereGeometry(1)
 
-  const color = getSecurityColor(security)
-
-  const system_material = new THREE.MeshBasicMaterial({
-    color,
-    opacity: 0.6,
-    transparent: true,
-  })
-
-  const cube = new THREE.Mesh(geometry, system_material)
+  // const color =
+  const color = new THREE.Color().setHex(getSecurityColor(security))
 
   const system_position = [-center[0], center[1], center[2]].map(
     (p) => p / divisor
   ) as Point
 
-  cube.position.set(...system_position)
+  // cube.position.set(...system_position)
+  geometry.translate(...system_position)
+
+  // get the colors as an array of values from 0 to 255
+  const rgb = color.toArray().map((v) => v * 255)
+
+  // make an array to store colors for each vertex
+  const numVerts = geometry.getAttribute('position').count
+  const itemSize = 3 // r, g, b
+  const colors = new Uint8Array(itemSize * numVerts)
+
+  // copy the color into the colors array for each vertex
+  colors.forEach((v, ndx) => {
+    colors[ndx] = rgb[ndx % 3]
+  })
+
+  const normalized = true
+  const colorAttrib = new THREE.BufferAttribute(colors, itemSize, normalized)
+  geometry.setAttribute('color', colorAttrib)
 
   stargates.forEach((stargate) => {
     const stargate_position = new THREE.Vector3(
@@ -89,13 +112,58 @@ for (const { center, security, stargates } of systems) {
 
     const destination_position = new THREE.Vector3(...p)
 
-    const line = create_line(stargate_position, destination_position, color)
+    // const material = new THREE.LineBasicMaterial({
+    //   color,
+    //   opacity: 0.3,
+    //   transparent: true,
+    // })
 
-    scene.add(line)
+    const rgb = color.toArray().map((v) => v * 255)
+    line_points.push(stargate_position, destination_position)
+    line_colors.push(...rgb, ...rgb)
   })
 
-  scene.add(cube)
+  // line_geometries.push(line)
+
+  // scene.add(cube)
+  geometries.push(geometry)
 }
+
+const line_colors_uint = new Uint8Array(line_colors)
+
+const mergedGeometry = BufferGeometryUtils.mergeGeometries(geometries, false)
+const material = new THREE.MeshBasicMaterial({
+  vertexColors: true,
+  opacity: 0.6,
+  transparent: true,
+})
+const mesh = new THREE.Mesh(mergedGeometry, material)
+scene.add(mesh)
+
+const geometry = new THREE.BufferGeometry().setFromPoints(line_points)
+
+geometry.setAttribute(
+  'color',
+  new THREE.BufferAttribute(line_colors_uint, 3, true)
+)
+
+const line = new THREE.Line(
+  geometry,
+  new THREE.LineBasicMaterial({
+    vertexColors: true,
+    opacity: 0.2,
+    transparent: true,
+  })
+)
+
+scene.add(line)
+
+// const mergedLineGeometry = BufferGeometryUtils.mergeGeometries(
+//   line_geometries,
+//   false
+// )
+// const lineMesh = new THREE.Mesh(mergedLineGeometry, material)
+// scene.add(lineMesh)
 
 createRegions()
 
@@ -105,7 +173,7 @@ const controls = new OrbitControls(camera, renderer.domElement)
 controls.target.set(0, 5, 0)
 controls.update()
 
-const axesHelper = new THREE.AxesHelper(5)
+const axesHelper = new THREE.AxesHelper(10)
 scene.add(axesHelper)
 
 function animate() {
@@ -113,6 +181,8 @@ function animate() {
     region_elements[i].style.pointerEvents = 'none'
     region_objects[i].rotation.set(...camera.rotation.toArray())
   }
+
+  line.visible = state.shouldShowLines
 
   renderer.render(scene, camera)
   cssRenderer.render(scene, camera)
