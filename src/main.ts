@@ -46,14 +46,13 @@ const camera = new THREE.PerspectiveCamera(
 const renderer = new THREE.WebGLRenderer()
 renderer.setSize(window.innerWidth, window.innerHeight)
 renderer.domElement.id = 'canvas'
+renderer.setPixelRatio(window.devicePixelRatio)
 
 const cssRenderer = new CSS3DRenderer()
 cssRenderer.setSize(window.innerWidth, window.innerHeight)
 cssRenderer.domElement.style.position = 'absolute'
 cssRenderer.domElement.style.top = '0'
 cssRenderer.domElement.style.left = '0'
-cssRenderer.domElement.style.width = '100%'
-cssRenderer.domElement.style.height = '100%'
 cssRenderer.domElement.style.pointerEvents = 'none'
 
 document.body.appendChild(renderer.domElement)
@@ -185,11 +184,8 @@ renderer.setAnimationLoop(animate)
 function createRegions() {
   for (const region of regions) {
     const element = document.createElement('div')
-    element.style.color = 'white'
-    element.style.fontSize = '4px'
+    element.id = 'region-node'
     element.textContent = region.name
-    element.style.opacity = '0.8'
-    element.className = 'textnode'
 
     const objectCSS = new CSS3DObject(element)
     objectCSS.position.x = -region.center[0] / divisor

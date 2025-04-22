@@ -47,3 +47,24 @@ body {
   cursor: pointer;
   text-transform: capitalize;
 }
+
+#region-node {
+  color: white;
+  font-size: 4px;
+  opacity: 0.8;
+}
+
+@media screen and (max-width: 600px) {
+  #info button {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+
+  #region-node {
+    font-size: 6px;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    opacity: 0.9;
+  }
+}
