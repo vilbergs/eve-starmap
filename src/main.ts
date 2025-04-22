@@ -16,7 +16,7 @@ import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js'
 const show_lines_button = document.getElementById('show-lines-button')
 
 window.state = {
-  shouldShowLines: false,
+  shouldShowLines: true,
   toggleLineVisibility() {
     this.shouldShowLines = !this.shouldShowLines
     show_lines_button!.innerHTML = `Show Lines: ${this.shouldShowLines}`
