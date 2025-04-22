@@ -10,7 +10,7 @@ import regions from './regions.json'
 import { create_system_graph } from './system-graph'
 import { z } from '@zod/mini'
 import { Point, SolarSystemSchema } from './schemas'
-import { Vector } from 'three/examples/jsm/Addons.js'
+
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js'
 
 const show_lines_button = document.getElementById('show-lines-button')
@@ -83,7 +83,7 @@ for (const { center, security, stargates } of systems) {
   const colors = new Uint8Array(itemSize * numVerts)
 
   // copy the color into the colors array for each vertex
-  colors.forEach((v, ndx) => {
+  colors.forEach((_, ndx) => {
     colors[ndx] = rgb[ndx % 3]
   })
 
@@ -102,7 +102,8 @@ for (const { center, security, stargates } of systems) {
       return
     }
 
-    const { center: destination_p } = destination_system
+    const { center: destination_p, security: destination_sec } =
+      destination_system
 
     const p: Point = [
       -destination_p[0],
@@ -118,9 +119,11 @@ for (const { center, security, stargates } of systems) {
     //   transparent: true,
     // })
 
-    const rgb = color.toArray().map((v) => v * 255)
+    const destination_color = new THREE.Color(getSecurityColor(destination_sec))
+      .toArray()
+      .map((v) => v * 255)
     line_points.push(stargate_position, destination_position)
-    line_colors.push(...rgb, ...rgb)
+    line_colors.push(...rgb, ...destination_color) // push the same color for both points
   })
 
   // line_geometries.push(line)
@@ -140,15 +143,15 @@ const material = new THREE.MeshBasicMaterial({
 const mesh = new THREE.Mesh(mergedGeometry, material)
 scene.add(mesh)
 
-const geometry = new THREE.BufferGeometry().setFromPoints(line_points)
+const line_geometry = new THREE.BufferGeometry().setFromPoints(line_points)
 
-geometry.setAttribute(
+line_geometry.setAttribute(
   'color',
   new THREE.BufferAttribute(line_colors_uint, 3, true)
 )
 
 const line = new THREE.Line(
-  geometry,
+  line_geometry,
   new THREE.LineBasicMaterial({
     vertexColors: true,
     opacity: 0.2,
@@ -157,13 +160,6 @@ const line = new THREE.Line(
 )
 
 scene.add(line)
-
-// const mergedLineGeometry = BufferGeometryUtils.mergeGeometries(
-//   line_geometries,
-//   false
-// )
-// const lineMesh = new THREE.Mesh(mergedLineGeometry, material)
-// scene.add(lineMesh)
 
 createRegions()
 
@@ -182,23 +178,12 @@ function animate() {
     region_objects[i].rotation.set(...camera.rotation.toArray())
   }
 
-  line.visible = state.shouldShowLines
+  line.visible = window.state.shouldShowLines
 
   renderer.render(scene, camera)
   cssRenderer.render(scene, camera)
 }
 renderer.setAnimationLoop(animate)
-
-function createInfoNode(
-  name: string,
-  value: string | number,
-  color: string = 'black'
-): HTMLDivElement {
-  const node = document.createElement('div')
-  node.innerText = `${name}: ${value}`
-  node.style.color = color
-  return node
-}
 
 function createRegions() {
   for (const region of regions) {
@@ -253,24 +238,4 @@ function getSecurityColor(security: number) {
   }
 
   return 0x8f2f6a
-}
-
-function create_line(
-  from: THREE.Vector3,
-  to: THREE.Vector3,
-  color: THREE.ColorRepresentation
-) {
-  const material = new THREE.LineBasicMaterial({
-    color,
-    opacity: 0.3,
-    transparent: true,
-  })
-
-  const points = [from, to]
-
-  const geometry = new THREE.BufferGeometry().setFromPoints(points)
-
-  const line = new THREE.Line(geometry, material)
-
-  return line
 }
