@@ -112,12 +112,6 @@ for (const { center, security, stargates } of systems) {
 
     const destination_position = new THREE.Vector3(...p)
 
-    // const material = new THREE.LineBasicMaterial({
-    //   color,
-    //   opacity: 0.3,
-    //   transparent: true,
-    // })
-
     const destination_color = new THREE.Color(getSecurityColor(destination_sec))
       .toArray()
       .map((v) => v * 255)

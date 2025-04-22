@@ -1,9 +1,7 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
+  font-family: Avenir, Helvetica, Arial, sans-serif;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -50,24 +48,20 @@ body {
 
 #region-node {
   color: white;
-  font-size: 4px;
+  transform-style: preserve-3d;
+  font-size: 2vmin;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  will-change: transform;
+  backface-visibility: hidden;
   opacity: 0.8;
+  font-weight: 500;
 }
 
 @media screen and (max-width: 600px) {
   #info button {
     font-size: 12px;
     padding: 4px 8px;
-  }
-
-  #region-node {
-    transform-style: preserve-3d;
-    font-size: 2vmin;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
-    opacity: 0.9;
-    will-change: transform;
-    backface-visibility: hidden;
   }
 }
