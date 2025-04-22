@@ -36,6 +36,7 @@ const divisor = 1_000_000_000_000_000
 // SETUP
 
 const scene = new THREE.Scene()
+scene.background = new THREE.Color('black')
 const camera = new THREE.PerspectiveCamera(
   75,
   window.innerWidth / window.innerHeight,
@@ -43,7 +44,7 @@ const camera = new THREE.PerspectiveCamera(
   1500
 )
 
-const renderer = new THREE.WebGLRenderer()
+const renderer = new THREE.WebGLRenderer({ antialias: true })
 renderer.setSize(window.innerWidth, window.innerHeight)
 renderer.domElement.id = 'canvas'
 renderer.setPixelRatio(window.devicePixelRatio)
@@ -128,10 +129,11 @@ for (const { center, security, stargates } of systems) {
 const line_colors_uint = new Uint8Array(line_colors)
 
 const mergedGeometry = BufferGeometryUtils.mergeGeometries(geometries, false)
-const material = new THREE.MeshBasicMaterial({
+const material = new THREE.MeshPhongMaterial({
   vertexColors: true,
   opacity: 0.6,
   transparent: true,
+  shininess: 50,
 })
 const mesh = new THREE.Mesh(mergedGeometry, material)
 scene.add(mesh)
@@ -167,6 +169,18 @@ const controls = new OrbitControls(camera, renderer.domElement)
 controls.target.set(150, 100, 0)
 controls.update()
 
+const color = 0xffffff
+const intensity = 2
+const light = new THREE.DirectionalLight(color, intensity)
+light.position.set(...camera.position.toArray())
+light.target.position.set(150, 100, 0)
+
+scene.add(light)
+scene.add(light.target)
+
+const helper = new THREE.DirectionalLightHelper(light)
+scene.add(helper)
+
 function animate() {
   for (let i = 0; i < region_objects.length; i++) {
     region_elements[i].style.pointerEvents = 'none'
@@ -174,6 +188,15 @@ function animate() {
   }
 
   line.visible = window.state.shouldShowLines
+
+  light.position.set(...camera.position.toArray())
+  light.rotation.set(...camera.rotation.toArray())
+
+  light.target.position.set(...getPositionInFrontOfCamera(100).toArray())
+  light.intensity = Math.pow(
+    light.target.position.distanceTo(camera.position),
+    0.4
+  )
 
   renderer.render(scene, camera)
   cssRenderer.render(scene, camera)
@@ -230,4 +253,22 @@ function getSecurityColor(security: number) {
   }
 
   return 0x8f2f6a
+}
+
+function getPositionInFrontOfCamera(distance) {
+  // Create a vector representing the direction the camera is facing
+  const direction = new THREE.Vector3()
+  camera.getWorldDirection(direction)
+
+  // Normalize the direction vector (make it length 1)
+  direction.normalize()
+
+  // Multiply by the distance you want
+  direction.multiplyScalar(distance)
+
+  // Add this offset to the camera's position to get the final position
+  const targetPosition = new THREE.Vector3()
+  targetPosition.addVectors(camera.position, direction)
+
+  return targetPosition
 }
