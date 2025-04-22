@@ -62,7 +62,7 @@ const line_points: any[] = []
 const line_colors: number[] = []
 
 for (const { center, security, stargates } of systems) {
-  const geometry = new THREE.SphereGeometry(1)
+  const geometry = new THREE.SphereGeometry(1.2)
 
   // const color =
   const color = new THREE.Color().setHex(getSecurityColor(security))
