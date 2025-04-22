@@ -169,9 +169,6 @@ const controls = new OrbitControls(camera, renderer.domElement)
 controls.target.set(0, 5, 0)
 controls.update()
 
-const axesHelper = new THREE.AxesHelper(10)
-scene.add(axesHelper)
-
 function animate() {
   for (let i = 0; i < region_objects.length; i++) {
     region_elements[i].style.pointerEvents = 'none'
