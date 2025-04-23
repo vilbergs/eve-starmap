@@ -135,7 +135,11 @@ for (const { center, security, stargates, solarSystemID } of systems) {
 
   // scene.add(cube)
 
-  const material = new THREE.MeshBasicMaterial({ color })
+  const material = new THREE.MeshBasicMaterial({
+    color,
+    opacity: 0.7,
+    transparent: true,
+  })
   const cube = new THREE.Mesh(geometry, material)
   cube.userData = {
     id: solarSystemID,
@@ -252,24 +256,18 @@ function getSecurityColor(security: number) {
 
 const pickHelper = new PickHelper()
 
-const canvas = renderer.domElement
-
-window.addEventListener('click', pickCountry, false)
+window.addEventListener('click', pickSystem, false)
 
 function getCanvasRelativePosition(event: MouseEvent) {
-  const rect = canvas.getBoundingClientRect()
-
   const vec = new THREE.Vector2(
     (event.clientX / window.innerWidth) * 2 - 1,
     -(event.clientY / window.innerHeight) * 2 + 1
   )
 
-  console.log(vec)
-
   return vec
 }
 
-function pickCountry(event: MouseEvent) {
+function pickSystem(event: MouseEvent) {
   // exit if we have not loaded the data yet
 
   const position = getCanvasRelativePosition(event)
