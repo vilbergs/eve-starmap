@@ -15,6 +15,10 @@ import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js'
 import { GPUPickHelper } from './GPUPickHelper'
 import { PickHelper } from './PickHelper'
 
+const ring_geo = new THREE.RingGeometry(1.4, 1.7)
+
+const ring = new THREE.Mesh(ring_geo)
+
 const show_lines_button = document.getElementById('show-lines-button')
 
 window.state = {
@@ -65,7 +69,7 @@ const line_colors: number[] = []
 
 const material = new THREE.MeshBasicMaterial({
   // vertexColors: true,
-  opacity: 0.7,
+  opacity: 0.9,
   transparent: true,
 })
 
@@ -81,9 +85,6 @@ for (const { center, security, stargates, solarSystemID } of systems) {
   const system_position = [-center[0], center[1], center[2]].map(
     (p) => p / divisor
   ) as Point
-
-  // cube.position.set(...system_position)
-  geometry.translate(...system_position)
 
   // get the colors as an array of values from 0 to 255
   const rgb = color.toArray().map((v) => v * 255)
@@ -145,6 +146,8 @@ for (const { center, security, stargates, solarSystemID } of systems) {
     id: solarSystemID,
   }
 
+  cube.position.set(...system_position)
+
   mesh.attach(cube)
 
   geometries.push(geometry)
@@ -196,6 +199,10 @@ function animate() {
   }
 
   line.visible = window.state.shouldShowLines
+
+  if (ring.visible) {
+    ring.rotation.set(...camera.rotation.toArray())
+  }
 
   renderer.render(scene, camera)
   cssRenderer.render(scene, camera)
@@ -269,11 +276,21 @@ function getCanvasRelativePosition(event: MouseEvent) {
 
 function pickSystem(event: MouseEvent) {
   // exit if we have not loaded the data yet
-
   const position = getCanvasRelativePosition(event)
-  const id = pickHelper.pick(position, scene, camera)
+  const object = pickHelper.pick(position, scene, camera)
 
-  console.log(id)
+  if (!object) {
+    return
+  }
+
+  ring.visible = true
+  ring.position.set(...object.position.toArray())
+
+  scene.add(ring)
+
+  controls.target.set(...object.position.toArray())
+  controls.update()
+
   // if (id > 0) {
   //   // we clicked a country. Toggle its 'selected' property
   //   const countryInfo = countryInfos[id - 1]
