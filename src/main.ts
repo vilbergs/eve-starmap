@@ -138,7 +138,7 @@ for (const { center, security, stargates, solarSystemID } of systems) {
 
   const material = new THREE.MeshBasicMaterial({
     color,
-    opacity: 0.7,
+    opacity: 0.8,
     transparent: true,
   })
   const cube = new THREE.Mesh(geometry, material)
