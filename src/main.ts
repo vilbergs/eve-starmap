@@ -12,6 +12,8 @@ import { z } from '@zod/mini'
 import { Point, SolarSystemSchema } from './schemas'
 
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js'
+import { GPUPickHelper } from './GPUPickHelper'
+import { PickHelper } from './PickHelper'
 
 const show_lines_button = document.getElementById('show-lines-button')
 
@@ -61,12 +63,21 @@ document.body.appendChild(cssRenderer.domElement)
 const line_points: any[] = []
 const line_colors: number[] = []
 
-for (const { center, security, stargates } of systems) {
+const material = new THREE.MeshBasicMaterial({
+  // vertexColors: true,
+  opacity: 0.7,
+  transparent: true,
+})
+
+const mesh = new THREE.InstancedMesh(
+  new THREE.SphereGeometry(1.2),
+  material,
+  systems.length
+)
+
+for (const { center, security, stargates, solarSystemID } of systems) {
   const geometry = new THREE.SphereGeometry(1.2)
-
-  // const color =
   const color = new THREE.Color().setHex(getSecurityColor(security))
-
   const system_position = [-center[0], center[1], center[2]].map(
     (p) => p / divisor
   ) as Point
@@ -78,18 +89,18 @@ for (const { center, security, stargates } of systems) {
   const rgb = color.toArray().map((v) => v * 255)
 
   // make an array to store colors for each vertex
-  const numVerts = geometry.getAttribute('position').count
-  const itemSize = 3 // r, g, b
-  const colors = new Uint8Array(itemSize * numVerts)
+  // const numVerts = geometry.getAttribute('position').count
+  // const itemSize = 3 // r, g, b
+  // const colors = new Uint8Array(itemSize * numVerts)
 
-  // copy the color into the colors array for each vertex
-  colors.forEach((_, ndx) => {
-    colors[ndx] = rgb[ndx % 3]
-  })
+  // // copy the color into the colors array for each vertex
+  // colors.forEach((_, ndx) => {
+  //   colors[ndx] = rgb[ndx % 3]
+  // })
 
-  const normalized = true
-  const colorAttrib = new THREE.BufferAttribute(colors, itemSize, normalized)
-  geometry.setAttribute('color', colorAttrib)
+  // const normalized = true
+  // const colorAttrib = new THREE.BufferAttribute(colors, itemSize, normalized)
+  // geometry.setAttribute('color', colorAttrib)
 
   stargates.forEach((stargate) => {
     const stargate_position = new THREE.Vector3(
@@ -123,18 +134,25 @@ for (const { center, security, stargates } of systems) {
   // line_geometries.push(line)
 
   // scene.add(cube)
+
+  const material = new THREE.MeshBasicMaterial({ color })
+  const cube = new THREE.Mesh(geometry, material)
+  cube.userData = {
+    id: solarSystemID,
+  }
+
+  mesh.attach(cube)
+
   geometries.push(geometry)
 }
 
 const line_colors_uint = new Uint8Array(line_colors)
 
-const mergedGeometry = BufferGeometryUtils.mergeGeometries(geometries, false)
-const material = new THREE.MeshBasicMaterial({
-  vertexColors: true,
-  opacity: 0.7,
-  transparent: true,
-})
-const mesh = new THREE.Mesh(mergedGeometry, material)
+const mergedGeometry = BufferGeometryUtils.mergeGeometries(geometries, true)
+mergedGeometry.computeBoundingBox()
+
+// const mesh = new THREE.Mesh(mergedGeometry, material)
+
 scene.add(mesh)
 
 const line_geometry = new THREE.BufferGeometry().setFromPoints(line_points)
@@ -231,3 +249,54 @@ function getSecurityColor(security: number) {
 
   return 0x8f2f6a
 }
+
+const pickHelper = new PickHelper()
+
+const canvas = renderer.domElement
+
+window.addEventListener('click', pickCountry, false)
+
+function getCanvasRelativePosition(event: MouseEvent) {
+  const rect = canvas.getBoundingClientRect()
+
+  const vec = new THREE.Vector2(
+    (event.clientX / window.innerWidth) * 2 - 1,
+    -(event.clientY / window.innerHeight) * 2 + 1
+  )
+
+  console.log(vec)
+
+  return vec
+}
+
+function pickCountry(event: MouseEvent) {
+  // exit if we have not loaded the data yet
+
+  const position = getCanvasRelativePosition(event)
+  const id = pickHelper.pick(position, scene, camera)
+
+  console.log(id)
+  // if (id > 0) {
+  //   // we clicked a country. Toggle its 'selected' property
+  //   const countryInfo = countryInfos[id - 1]
+  //   const selected = !countryInfo.selected
+  //   // if we're selecting this country and modifiers are not
+  //   // pressed unselect everything else.
+  //   if (selected && !event.shiftKey && !event.ctrlKey && !event.metaKey) {
+  //     unselectAllCountries()
+  //   }
+  //   numCountriesSelected += selected ? 1 : -1
+  //   countryInfo.selected = selected
+  // } else if (numCountriesSelected) {
+  //   // the ocean or sky was clicked
+  //   unselectAllCountries()
+  // }
+  // requestRenderIfNotRequested()
+}
+
+// function unselectAllCountries() {
+//   numCountriesSelected = 0
+//   countryInfos.forEach((countryInfo) => {
+//     countryInfo.selected = false
+//   })
+// }
