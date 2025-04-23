@@ -291,31 +291,7 @@ function pickSystem(event: MouseEvent) {
   ring.position.set(...object.position.toArray())
 
   animateTargetChange(...object.position.toArray(), 0.75)
-
-  // if (id > 0) {
-  //   // we clicked a country. Toggle its 'selected' property
-  //   const countryInfo = countryInfos[id - 1]
-  //   const selected = !countryInfo.selected
-  //   // if we're selecting this country and modifiers are not
-  //   // pressed unselect everything else.
-  //   if (selected && !event.shiftKey && !event.ctrlKey && !event.metaKey) {
-  //     unselectAllCountries()
-  //   }
-  //   numCountriesSelected += selected ? 1 : -1
-  //   countryInfo.selected = selected
-  // } else if (numCountriesSelected) {
-  //   // the ocean or sky was clicked
-  //   unselectAllCountries()
-  // }
-  // requestRenderIfNotRequested()
 }
-
-// function unselectAllCountries() {
-//   numCountriesSelected = 0
-//   countryInfos.forEach((countryInfo) => {
-//     countryInfo.selected = false
-//   })
-// }
 
 function animateTargetChange(
   newTargetX: number,
