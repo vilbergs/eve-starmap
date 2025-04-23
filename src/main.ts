@@ -13,10 +13,7 @@ import { Point, SolarSystemSchema } from './schemas'
 
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js'
 import { PickHelper } from './PickHelper'
-
-const ring_geo = new THREE.RingGeometry(1.4, 1.7)
-
-const ring = new THREE.Mesh(ring_geo)
+import gsap from 'gsap'
 
 const show_lines_button = document.getElementById('show-lines-button')
 
@@ -191,6 +188,12 @@ const controls = new OrbitControls(camera, renderer.domElement)
 controls.target.set(150, 100, 0)
 controls.update()
 
+const ring_geo = new THREE.RingGeometry(1.4, 1.7)
+
+const ring = new THREE.Mesh(ring_geo)
+ring.visible = false
+scene.add(ring)
+
 function animate() {
   for (let i = 0; i < region_objects.length; i++) {
     region_elements[i].style.pointerEvents = 'none'
@@ -278,6 +281,8 @@ function pickSystem(event: MouseEvent) {
   const position = getCanvasRelativePosition(event)
   const object = pickHelper.pick(position, scene, camera)
 
+  console.log(object)
+
   if (!object) {
     return
   }
@@ -285,9 +290,7 @@ function pickSystem(event: MouseEvent) {
   ring.visible = true
   ring.position.set(...object.position.toArray())
 
-  scene.add(ring)
-
-  animateTargetWithoutLibrary(...object.position.toArray())
+  animateTargetChange(...object.position.toArray(), 0.75)
 
   // if (id > 0) {
   //   // we clicked a country. Toggle its 'selected' property
@@ -314,30 +317,21 @@ function pickSystem(event: MouseEvent) {
 //   })
 // }
 
-function animateTargetWithoutLibrary(
+function animateTargetChange(
   newTargetX: number,
   newTargetY: number,
   newTargetZ: number,
-  duration = 500
+  duration = 1
 ) {
-  const startTarget = controls.target.clone()
-  const endTarget = new THREE.Vector3(newTargetX, newTargetY, newTargetZ)
-
-  const startTime = Date.now()
-
-  function updateTarget() {
-    const elapsedTime = Date.now() - startTime
-    const progress = Math.min(elapsedTime / duration, 1)
-
-    // Interpolate position
-    controls.target.lerpVectors(startTarget, endTarget, progress)
-    controls.update()
-
-    // Continue animation if not complete
-    if (progress < 1) {
-      requestAnimationFrame(updateTarget)
-    }
-  }
-
-  updateTarget()
+  // Animate to new target
+  gsap.to(controls.target, {
+    x: newTargetX,
+    y: newTargetY,
+    z: newTargetZ,
+    duration: duration,
+    onUpdate: function () {
+      // Update controls on each frame of the animation
+      controls.update()
+    },
+  })
 }
