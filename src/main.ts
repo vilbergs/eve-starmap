@@ -12,7 +12,6 @@ import { z } from '@zod/mini'
 import { Point, SolarSystemSchema } from './schemas'
 
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js'
-import { GPUPickHelper } from './GPUPickHelper'
 import { PickHelper } from './PickHelper'
 
 const ring_geo = new THREE.RingGeometry(1.4, 1.7)
