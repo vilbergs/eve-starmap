@@ -287,8 +287,7 @@ function pickSystem(event: MouseEvent) {
 
   scene.add(ring)
 
-  controls.target.set(...object.position.toArray())
-  controls.update()
+  animateTargetWithoutLibrary(...object.position.toArray())
 
   // if (id > 0) {
   //   // we clicked a country. Toggle its 'selected' property
@@ -314,3 +313,31 @@ function pickSystem(event: MouseEvent) {
 //     countryInfo.selected = false
 //   })
 // }
+
+function animateTargetWithoutLibrary(
+  newTargetX: number,
+  newTargetY: number,
+  newTargetZ: number,
+  duration = 500
+) {
+  const startTarget = controls.target.clone()
+  const endTarget = new THREE.Vector3(newTargetX, newTargetY, newTargetZ)
+
+  const startTime = Date.now()
+
+  function updateTarget() {
+    const elapsedTime = Date.now() - startTime
+    const progress = Math.min(elapsedTime / duration, 1)
+
+    // Interpolate position
+    controls.target.lerpVectors(startTarget, endTarget, progress)
+    controls.update()
+
+    // Continue animation if not complete
+    if (progress < 1) {
+      requestAnimationFrame(updateTarget)
+    }
+  }
+
+  updateTarget()
+}
